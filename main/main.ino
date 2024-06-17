@@ -7,29 +7,19 @@
 
 
 
-const int clk = 32;//32;
+const int clk = 32;
 const int dat = 33;
-
-const int clk_out = 23; // to monitor clock signal
 const int frame_out = 22; /// frame detection
 const int dat_out=21; // data decode
 
-#define TRUE 1
-#define FALSE 0
 #define REVERSE     // Defined if input signal needs to be inverted (needed if level adaptation done with NPN)
 
 // ANALYSE THE CLOCK SIGNAL
-
 uint32_t event_fall;   // timestamp of the last falling edge
 uint32_t time_low;    // duration of last low level (between falling and rising edge)
 
 uint32_t event_rise;  // tlmestamp of the last rising edge
 uint32_t time_high;   // duration of the last high levet (between rising and fallin edge)
-
-uint32_t event_change;
-uint32_t period;
-
-
 
 int bit=-1;
 uint8_t bitFrame[24];
@@ -78,13 +68,9 @@ void IRAM_ATTR clk_fall(){
 
 void IRAM_ATTR clk_CHANGE() {
   uint32_t ti=micros();
-  period=ti-event_change;
-  event_change=ti;
   if(getClkState()){
-    digitalWrite(clk_out,LOW);
     return clk_rise();
   }else{
-    digitalWrite(clk_out,HIGH);
     return clk_fall();
   }
 }
@@ -116,7 +102,6 @@ void setup() {
   Serial.begin(115200);
   pinMode(clk, INPUT_PULLUP);
   pinMode(dat,INPUT_PULLUP);
-  pinMode(clk_out,OUTPUT);
   pinMode(frame_out,OUTPUT);
   pinMode(dat_out,OUTPUT);
   digitalWrite(frame_out,LOW);
