@@ -90,13 +90,29 @@ void IRAM_ATTR clk_CHANGE() {
 }
 
 void printMeasure(){
-  for (int i=0; i<24; i++){
-    Serial.print(measure[i]);
+  int i;
+  // Décode mesured value
+  int val=0;
+  for (i=11; i>=0; i--){
+    val<<=1;
+    val+=measure[i];
   }
-  Serial.println();
+  if (measure[20]==HIGH){
+    val=-val;
+  }
+  // convert regarding the system (metric vs US)
+  float fval;
+  if (measure[23]==HIGH){
+    fval=float(val)/2000.0;
+    Serial.println(fval,4);
+  }else{
+    fval=float(val)/100.0;
+    Serial.println(fval,2);
+  }
 }
 
 void setup() {
+  
   Serial.begin(115200);
   pinMode(clk, INPUT_PULLUP);
   pinMode(dat,INPUT_PULLUP);
@@ -106,12 +122,7 @@ void setup() {
   digitalWrite(frame_out,LOW);
   digitalWrite(dat_out,HIGH);
   
-  Serial.println("\nInit interuption (wait for 10s)");
-  for (int i=0; i<10; i++){
-    Serial.print(".");
-    delay (1000);
-  }
-  Serial.println();
+  Serial.println("\nInit interuption");
 
   state=getClkState();
   attachInterrupt(clk,clk_CHANGE,CHANGE);
@@ -121,11 +132,10 @@ void setup() {
   }
   bit=0;
   Serial.println(getClkState());
-  delay(5000);
   Serial.println("Ready");
 }
 
 void loop() {
-  delay(10);
+  delay(100);
   printMeasure();
 }
